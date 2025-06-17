@@ -1,19 +1,11 @@
-# Updated script with:
-# 1. Duplicate prevention
-# 2. Iterative blog post lookup with user confirmation
-
-
-# Dependencies
-# pip install requests beautifulsoup4 google-api-python-client google-auth-httplib2 google-auth-oauthlib python-dateutil
-
 import os
 import re
 import datetime
 import requests
 from bs4 import BeautifulSoup
 from dateutil import parser as dtparser
+from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 BLOG_URL = "https://www.hardywyzszaforma.pl/blog"
@@ -68,13 +60,13 @@ def parse_day_block(day_text):
 
 def get_calendar_service():
     creds = None
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-    if not creds or not creds.valid:
-        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-        creds = flow.run_local_server(port=0)
-        with open("token.json", "w") as f:
-            f.write(creds.to_json())
+    if os.path.exists("credentials.json"):
+        creds = Credentials.from_authorized_user_file("credentials.json", SCOPES)
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+    else:
+        raise RuntimeError("credentials.json not found. Run the initial authorization manually.")
+
     return build("calendar", "v3", credentials=creds)
 
 
