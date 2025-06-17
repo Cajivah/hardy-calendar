@@ -1,67 +1,86 @@
-from extractor import GymPlanExtractor
+import os
+import re
 import datetime
-import os.path
-
+from dateutil import parser as dtparser
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+from extractor import GymPlanExtractor
 
-SCOPES = ["https://www.googleapis.com/auth/calendar"]
+BLOG_URL = "https://www.hardywyzszaforma.pl/blog"
 CALENDAR_ID = "a4ac48cba1826f488d829fd46a655cef84ba8eb5757c17a2fd3738cf0d4b7711@group.calendar.google.com"
+EVENT_TIME = datetime.time(8, 0)
+SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
-def get_credentials():
-    creds = None
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "credentials.json", SCOPES
-            )
-            creds = flow.run_local_server(port=0)
+def get_calendar_service():
+    if not os.path.exists("token.json"):
+        raise RuntimeError("token.json not found. Run the initial authorization manually.")
 
-        # Save the credentials for the next run to avoid re-authentication
-        with open("token.json", "w") as token:
-            token.write(creds.to_json())
+    creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+
+    return build("calendar", "v3", credentials=creds)
+
+
+def event_exists(service, cal_id, dt, summary):
+    time_min = dt.isoformat()
+    time_max = (dt + datetime.timedelta(hours=2)).isoformat()
+    events = service.events().list(
+        calendarId=cal_id,
+        timeMin=time_min,
+        timeMax=time_max,
+        timeZone="Europe/Warsaw",
+        singleEvents=True
+    ).execute().get("items", [])
+    for event in events:
+        if event.get("summary") == summary:
+            return True
+    return False
+
+
+def normalize_type(training_type):
+    return training_type.strip().capitalize()
+
+
+def create_event(service, cal_id, date_str, day_name, block):
+    today = datetime.datetime.now()
+    dt = dtparser.parse(f"{date_str}.{today.year}", dayfirst=True).date()
+    end_date = dt + datetime.timedelta(days=1)
+
+    summary = f"{normalize_type(block['type'])}"
+
+    # if event_exists(service, cal_id, dt, summary):
+    #     print(f"Skipping duplicate event: {summary} on {date_str}")
+    #     return
+
+    event = {
+        "summary": summary,
+        "description": (
+            f"Ćwiczenia: {block['ex']}\n"
+            f"Metoda treningowa: {block['met']}\n"
+            f"Czas pracy: {block['dur']}"
+        ),
+        "start": {"date": dt.isoformat()},
+        "end": {"date": end_date.isoformat()}
+    }
+
+    ev = service.events().insert(calendarId=cal_id, body=event).execute()
+    print(f"Created event: {ev['summary']} on {date_str}")
+
 
 def main():
-    creds = get_credentials()
+    service = get_calendar_service()
 
-    plans = GymPlanExtractor().get_plans()
-    print(f"Forwarding plans to Google Calendar: {plans}")
-    service = build("calendar", "v3", credentials=creds)
-    event = {
-        'summary': 'Google I/O 2015',
-        'location': '800 Howard St., San Francisco, CA 94103',
-        'description': 'A chance to hear more about Google\'s developer products.',
-        'start': {
-            'dateTime': '2025-06-20T09:00:00-07:00',
-            'timeZone': 'America/Los_Angeles',
-        },
-        'end': {
-            'dateTime': '2015-05-28T17:00:00-07:00',
-            'timeZone': 'America/Los_Angeles',
-        },
-        'recurrence': [
-            'RRULE:FREQ=DAILY;COUNT=2'
-        ],
-        'attendees': [
-            {'email': 'lpage@example.com'},
-            {'email': 'sbrin@example.com'},
-        ],
-        'reminders': {
-            'useDefault': False,
-            'overrides': [
-                {'method': 'email', 'minutes': 24 * 60},
-                {'method': 'popup', 'minutes': 10},
-            ],
-        },
-    }
-    service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
+    extractor = GymPlanExtractor()
+    plans = extractor.get_plans()
+    for day in plans:
+        for block in day["blocks"]:
+            create_event(service, CALENDAR_ID, day["date"], day["day"], block)
+
+        # User manually confirms each plan; process all confirmed plans
+
+
 if __name__ == "__main__":
     main()
