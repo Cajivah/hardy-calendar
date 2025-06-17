@@ -1,0 +1,21 @@
+[project]
+name = "hardy-calendar"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Jakub Małyjasiak"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "requests (>=2.32.4,<3.0.0)",
+    "beautifulsoup4 (>=4.13.4,<5.0.0)",
+    "google-api-python-client (>=2.172.0,<3.0.0)",
+    "google-auth-oauthlib (>=1.2.2,<2.0.0)",
+    "python-dateutil (>=2.9.0.post0,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

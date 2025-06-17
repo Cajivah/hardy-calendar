@@ -1,9 +1,14 @@
+import re
+import requests
+from bs4 import BeautifulSoup
+
+BLOG_URL = "https://www.hardywyzszaforma.pl/blog"
+
+
 class GymPlanExtractor:
-    def __init__(self, blog_url):
-        self.blog_url = blog_url
 
     def fetch_plan_links(self):
-        resp = requests.get(self.blog_url)
+        resp = requests.get(BLOG_URL)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
         posts = soup.find_all("a", href=True, text=re.compile(r"Plan treningowy", re.I))
@@ -12,16 +17,14 @@ class GymPlanExtractor:
     def get_plans(self):
         for link in self.fetch_plan_links():
             html = requests.get(link).text
-            if self._user_confirm_post(html):
-                yield self._parse_plan(html)
+            plan = self._parse_plan(html)
+            if self._user_confirm_post(plan):
+                return plan
 
-    def _user_confirm_post(self, html):
-        soup = BeautifulSoup(html, "html.parser")
+    def _user_confirm_post(self, plan):
         print("\n---------- PREVIEW POST ----------")
-        print(soup.find("h1").text.strip())
-        snippet = soup.get_text("\n")[:1000]
-        print(snippet)
-        print("...\n")
+        print(plan)
+        print("\n---------- PREVIEW POST ----------")
         return input("Use this post? [y/n]: ").strip().lower() == 'y'
 
     def _parse_plan(self, html):
@@ -29,9 +32,12 @@ class GymPlanExtractor:
         text = soup.get_text("\n")
         date_headers = re.findall(r"(\d{2}\.\d{2})\s+(\w+)", text)
         schedule = []
-        header_positions = [(m.start(), d, dn) for m, (d, dn) in zip(re.finditer(r"(\d{2}\.\d{2})\s+(\w+)", text), date_headers)]
+        header_positions = [
+            (m.start(), d, dn)
+            for m, (d, dn) in zip(re.finditer(r"(\d{2}\.\d{2})\s+(\w+)", text), date_headers)
+        ]
         for i, (pos, date_str, day_name) in enumerate(header_positions):
-            end = header_positions[i+1][0] if i+1 < len(header_positions) else len(text)
+            end = header_positions[i + 1][0] if i + 1 < len(header_positions) else len(text)
             day_block = text[pos:end]
             blocks = self._parse_day_block(day_block)
             if blocks:
@@ -40,8 +46,8 @@ class GymPlanExtractor:
 
     def _parse_day_block(self, day_text):
         pattern = (
-            r"\u21d2\s*(?P<type>[^\n:]+)\n"
-            r"\u0106wiczenia:\s*(?P<ex>[^\n]+)\n"
+            r"⇒\s*(?P<type>[^\n:]+)\n"
+            r"Ćwiczenia:\s*(?P<ex>[^\n]+)\n"
             r"Metoda treningowa:\s*(?P<met>[^\n]+)\n"
             r"Czas pracy.*?:\s*(?P<dur>[^\n]+)"
         )
