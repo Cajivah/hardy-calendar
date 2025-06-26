@@ -8,18 +8,14 @@ from googleapiclient.discovery import build
 from extractor import GymPlanExtractor
 
 BLOG_URL = "https://www.hardywyzszaforma.pl/blog"
-CALENDAR_ID = "a4ac48cba1826f488d829fd46a655cef84ba8eb5757c17a2fd3738cf0d4b7711@group.calendar.google.com"
-EVENT_TIME = datetime.time(8, 0)
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 
 def get_calendar_service():
-    if not os.path.exists("token.json"):
-        raise RuntimeError("token.json not found. Run the initial authorization manually.")
-
-    creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
+    # Load credentials from environment variable
+    creds_json = os.environ.get('GOOGLE_API_CREDENTIALS')
+    creds_info = json.loads(creds_json)
+    creds = service_account.Credentials.from_service_account_info(creds_info)
 
     return build("calendar", "v3", credentials=creds)
 
@@ -71,15 +67,14 @@ def create_event(service, cal_id, date_str, day_name, block):
 
 
 def main():
+    calendarId = os.environ.get('GOOGLE_CALENDAR_ID')
     service = get_calendar_service()
 
     extractor = GymPlanExtractor()
     plans = extractor.get_plans()
     for day in plans:
         for block in day["blocks"]:
-            create_event(service, CALENDAR_ID, day["date"], day["day"], block)
-
-        # User manually confirms each plan; process all confirmed plans
+            create_event(service, calendarId, day["date"], day["day"], block)
 
 
 if __name__ == "__main__":
