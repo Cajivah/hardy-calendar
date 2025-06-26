@@ -10,10 +10,7 @@ from googleapiclient.discovery import build
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 def get_calendar_service() -> Any:
-    creds_json: str | None = os.environ.get('GOOGLE_API_CREDENTIALS')
-    if creds_json is None:
-        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'credentials.json')) as f:
-            creds_json = f.read()
+    creds_json: str = os.environ.get('GOOGLE_API_CREDENTIALS')
     creds_info: dict = json.loads(creds_json)
     creds = service_account.Credentials.from_service_account_info(creds_info)
     return build("calendar", "v3", credentials=creds)

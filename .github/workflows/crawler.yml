@@ -57,7 +57,7 @@ jobs:
     - name: Run crawler script
       env:
         # Add your environment variables here
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_API_CREDENTIALS }}
+        GOOGLE_API_CREDENTIALS: ${{ secrets.GOOGLE_API_CREDENTIALS }}
         GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
         # Add any other secrets your script needs
       run: |
