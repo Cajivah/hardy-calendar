@@ -38,11 +38,6 @@ jobs:
         key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
         restore-keys: |
           venv-${{ runner.os }}-
-  
-    - name: Update poetry lock file
-      run: |
-        rm -f poetry.lock
-        poetry lock
         
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
