@@ -1,7 +1,8 @@
-[project]
+[tool.poetry]
 name = "hardy-calendar"
 version = "0.1.0"
-description = ""
+description = "Python script to synchronize hardy training plan with calendar"
+packages = [{include = "hardy_calendar", from = "src"}]
 authors = [
     {name = "Jakub Małyjasiak"}
 ]
@@ -19,3 +20,4 @@ dependencies = [
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+

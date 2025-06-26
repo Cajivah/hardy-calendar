@@ -1,5 +1,5 @@
-from extractor import get_daily_plans
-from google_calendar import create_event
+from .extractor import get_daily_plans
+from .google_calendar import create_event
 
 def main():
     calendarId = os.environ.get('GOOGLE_CALENDAR_ID')

@@ -2,6 +2,7 @@ name: Blog Crawler to Google Calendar
 
 on:
   schedule:
+    # Run daily at 8 AM UTC (adjust timezone as needed)
     - cron: '0 6 * * *'
   workflow_dispatch:  # Allows manual triggering
   push:
@@ -57,7 +58,7 @@ jobs:
         GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
         # Add any other secrets your script needs
       run: |
-        poetry run python src/main.py  # Update with your actual script name
+        poetry run hardy-calendar
         
     - name: Upload logs
       if: always()
