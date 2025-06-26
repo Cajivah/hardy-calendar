@@ -82,8 +82,6 @@ def get_daily_plans() -> Dict[datetime, str]:
     all_plans = {}
     for link in _fetch_plan_links():
         html = requests.get(link).text
-        with open("plan.html", "w", encoding="utf-8") as f:
-            f.write(html)
         plan = _parse_plan(html)
         all_plans.update(plan)
     return all_plans

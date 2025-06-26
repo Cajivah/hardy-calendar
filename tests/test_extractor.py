@@ -4,7 +4,7 @@ from src.hardy_calendar.extractor import _parse_plan
 
 def test_parse_one_day():
     # Load the HTML file
-    with open(os.path.join(os.path.dirname(__file__), "../plan.html"), encoding="utf-8") as f:
+    with open(os.path.join(os.path.dirname(__file__), "./plan.html"), encoding="utf-8") as f:
         html = f.read()
 
     # Parse the plan
@@ -35,9 +35,9 @@ Czas pracy w części głównej: 21 min
     assert plans[day] == expected
 
 
-def test_parse_one_day():
+def test_parse_another_day():
     # Load the HTML file
-    with open(os.path.join(os.path.dirname(__file__), "../plan.html"), encoding="utf-8") as f:
+    with open(os.path.join(os.path.dirname(__file__), "./plan.html"), encoding="utf-8") as f:
         html = f.read()
 
     # Parse the plan
