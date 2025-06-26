@@ -41,7 +41,7 @@ jobs:
         
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: poetry install --no-interaction --only=main
+      run: poetry install --no-interaction
       
     - name: Verify Python environment
       run: |
@@ -50,7 +50,7 @@ jobs:
 
     - name: Run tests
       run: poetry run pytest
-      
+
     - name: Create logs directory
       run: mkdir -p logs
       
