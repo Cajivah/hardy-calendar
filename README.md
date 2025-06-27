@@ -17,5 +17,6 @@ It's meant to be run periodically, not reactively, so mind the delay. CRON is se
 
 ```bash
 poetry install
+poetry run pytest
 poetry run hardy-calendar
 ```
