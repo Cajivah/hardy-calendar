@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Dict
 from datetime import datetime
+import pprint
 
 BLOG_URL = "https://www.hardywyzszaforma.pl/blog"
 
@@ -80,8 +81,15 @@ def _parse_plan(html: str) -> Dict[datetime, str]:
 
 def get_daily_plans() -> Dict[datetime, str]:
     all_plans = {}
-    for link in _fetch_plan_links():
+    links = _fetch_plan_links()
+    print(f"Found {len(links)} training plans:\n" + "\n".join(links))
+
+    for link in links:
         html = requests.get(link).text
         plan = _parse_plan(html)
         all_plans.update(plan)
+
+    print(f"Extracted {len(all_plans)} daily plans.")
+    pprint.pprint(all_plans)
+    
     return all_plans
