@@ -16,62 +16,48 @@ def _fetch_plan_links() -> list[str]:
 
 
 def normalize_description(description: str) -> str:
-    # Replace non-breaking spaces with regular spaces
     text = description.replace('\xa0', ' ')
-    
-    # First, split on ⇒ to handle each section separately
     parts = text.split('⇒')
-    
-    # Process the first part (before any ⇒)
-    if parts[0].strip():
-        # If there's content before the first ⇒, keep it
-        result_parts = [parts[0].strip()]
-    else:
-        result_parts = []
-    
-    # Process each section that starts with ⇒
-    for i, part in enumerate(parts[1:], 1):
-        # Clean up this section
+    result_parts = []
+
+    for part in parts[1:]:
         section = part.strip()
-        
         # Remove newlines after colons and replace with single space
         section = re.sub(r':\s*\n\s*', ': ', section)
         # Remove newlines before colons
-        section = re.sub(r'\s*\n\s*:', ': ', section)
+        section = re.sub(r'\s*\n\s*:', ':', section)
         # Remove spaces before colons
         section = re.sub(r'\s+:', ':', section)
         # Remove multiple spaces
         section = re.sub(r' +', ' ', section)
-        
         # Split into lines and clean each line
         lines = []
         for line in section.splitlines():
             line = line.strip()
             if line:
                 lines.append(line)
-        
-        # Rejoin the lines for this section
-        clean_section = '\n'.join(lines)
-        
-        # Add the ⇒ back and add to results
-        result_parts.append('⇒ ' + clean_section)
-    
-    # Join all parts with double newlines (blank line between sections)
+            if line.lower().startswith("czas"):
+                break
+        if lines:
+            clean_section = '\n'.join(lines)
+            result_parts.append('⇒ ' + clean_section)
+
     return '\n\n'.join(result_parts)
 
 
 def _parse_plan(html: str) -> Dict[datetime, str]:
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text("\n")
-    header_pattern = re.compile(r"(\d{2}\.\d{2})\s+(\w+)", re.UNICODE)
+    header_pattern = re.compile(r"(\d{2}\s*\.\s*\d{2})\s+(\w+)", re.UNICODE)
     headers = [(m.start(), m.group(1), m.group(0)) for m in header_pattern.finditer(text)]
     result: Dict[datetime, str] = {}
     for i, (pos, date_str, header) in enumerate(headers):
         end = headers[i + 1][0] if i + 1 < len(headers) else len(text)
         description = text[pos:end].strip()
         description = description[len(header):].strip()
-        # Parse date (assume current year)
-        day, month = map(int, date_str.split('.'))
+        # Parse date (assume current year) - remove spaces around dot first
+        clean_date_str = re.sub(r'\s*\.\s*', '.', date_str)
+        day, month = map(int, clean_date_str.split('.'))
         # It won't work for the first week of January but...
         year = datetime.now().year
         date_obj = datetime(year, month, day)

@@ -23,7 +23,6 @@ Czas pracy w części głównej: 25 min
 Ćwiczenia: DEADLIFT, side jacknife, OHP, seated band row
 Metoda treningowa: 4 rundy, co 2,5 min wykonaj parę ćwiczeń
 Czas pracy w części głównej: 21 min
-INFO:
 
 ⇒ FBB
 Ćwiczenia: DB's butterfly, powerband triceps extension, b-stance BB RDL, push up plank leg abduction
@@ -73,4 +72,25 @@ Metoda treningowa: 4 rundy, co 2,5 min wykonaj parę ćwiczeń
 Czas pracy w części głównej: 21 min
 """.strip()
     assert day in plans
+    assert plans[day] == expected
+
+def test_parse_last_day():
+    # Load the HTML file
+    with open(os.path.join(os.path.dirname(__file__), "./plan.html"), encoding="utf-8") as f:
+        html = f.read()
+
+    # Parse the plan
+    plans = _parse_plan(html)
+
+    # Find the first date (adjust as needed)
+    day = datetime(2025, 7, 6)  # 06.07
+    
+    expected = """
+⇒ Fast&strong
+Ćwiczenia: burpee, DB's push press, bridge walkout, alt. Db snatch, forearm plank
+Metoda treningowa: 12 i 8 min EMOM
+Czas pracy w części głównej: 20 min
+""".strip()
+    assert day in plans
+    print(plans[day])
     assert plans[day] == expected
