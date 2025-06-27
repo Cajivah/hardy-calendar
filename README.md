@@ -4,6 +4,8 @@ This project crawls Hardy's website to find upcoming training schedules and crea
 
 It's meant to be run periodically, not reactively, so mind the delay. CRON is set in [github actions](.github/workflows/crawler.yml) to run it every 6 hours.
 
+The calendar is available there: [Google Calendar](https://calendar.google.com/calendar/embed?src=a4ac48cba1826f488d829fd46a655cef84ba8eb5757c17a2fd3738cf0d4b7711%40group.calendar.google.com&ctz=Africa%2FCeuta)
+
 ## Dependencies
 
 - Python 3.12+
@@ -20,3 +22,4 @@ poetry install
 poetry run pytest
 poetry run hardy-calendar
 ```
+
