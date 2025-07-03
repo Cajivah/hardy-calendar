@@ -6,7 +6,7 @@ on:
     - cron: '0 6,18 * * *'
   workflow_dispatch:  # Allows manual triggering
   push:
-    branches: [ main ]  # Optional: run on pushes to main for testing
+    branches: [ '**' ]  # Run on all branches
 
 jobs:
   crawl-and-sync:
@@ -54,20 +54,17 @@ jobs:
     - name: Create logs directory
       run: mkdir -p logs
       
-    - name: Run crawler script
+    - name: Run crawler script (plan only on non-main)
       env:
-        # Add your environment variables here
         GOOGLE_API_CREDENTIALS: ${{ secrets.GOOGLE_API_CREDENTIALS }}
         GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
-        # Add any other secrets your script needs
+        DRY_RUN: ${{ github.ref_name != 'main' && '1' || '0' }}
       run: |
         poetry run hardy-calendar
-        
-    - name: Upload logs
-      if: always()
+    - name: Upload plans artifact
       uses: actions/upload-artifact@v4
       with:
-        name: crawler-logs-${{ github.run_number }}
-        path: logs/
+        name: plans-${{ github.run_number }}
+        path: plans.json
         retention-days: 7
-        if-no-files-found: ignore
+        if-no-files-found: error
