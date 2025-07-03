@@ -5,8 +5,10 @@ from src.hardy_calendar import google_calendar
 
 class TestGoogleCalendar(unittest.TestCase):
     def setUp(self):
+        import os
+        os.environ["GOOGLE_CALENDAR_ID"] = "dummy_id"
         self.mock_service = MagicMock()
-        self.cal_id = "test_cal_id"
+        self.cal_id = "dummy_id"
         self.day = datetime.date(2025, 7, 3)
         self.description = "Test event description"
 
@@ -39,7 +41,7 @@ class TestGoogleCalendar(unittest.TestCase):
         # No existing events, event is created
         self.mock_service.events.return_value.list.return_value.execute.return_value = {"items": []}
         self.mock_service.events.return_value.insert.return_value.execute.return_value = {"summary": "Hardy 03.07"}
-        google_calendar.create_event(self.mock_service, self.cal_id, self.day, self.description)
+        google_calendar.create_event(self.mock_service, self.day, self.description)
         self.mock_service.events.return_value.insert.assert_called_once()
 
     def test_create_event_removes_existing(self):
@@ -47,7 +49,7 @@ class TestGoogleCalendar(unittest.TestCase):
         event = {"id": "abc", "summary": google_calendar.day_to_summary(self.day)}
         self.mock_service.events.return_value.list.return_value.execute.return_value = {"items": [event]}
         self.mock_service.events.return_value.insert.return_value.execute.return_value = {"summary": "Hardy 03.07"}
-        google_calendar.create_event(self.mock_service, self.cal_id, self.day, self.description)
+        google_calendar.create_event(self.mock_service, self.day, self.description)
         self.mock_service.events.return_value.delete.assert_called_once_with(calendarId=self.cal_id, eventId="abc")
         self.mock_service.events.return_value.insert.assert_called_once()
 
@@ -56,7 +58,7 @@ class TestGoogleCalendar(unittest.TestCase):
         dt = datetime.datetime(2025, 7, 3, 12, 0)
         self.mock_service.events.return_value.list.return_value.execute.return_value = {"items": []}
         self.mock_service.events.return_value.insert.return_value.execute.return_value = {"summary": "Hardy 03.07"}
-        google_calendar.create_event(self.mock_service, self.cal_id, dt, self.description)
+        google_calendar.create_event(self.mock_service, dt, self.description)
         args, kwargs = self.mock_service.events.return_value.insert.call_args
         self.assertEqual(kwargs["body"]["start"], {"date": "2025-07-03"})
         self.assertEqual(kwargs["body"]["end"], {"date": "2025-07-04"})
@@ -66,7 +68,7 @@ class TestGoogleCalendar(unittest.TestCase):
         self.mock_service.events.return_value.list.return_value.execute.return_value = {"items": []}
         self.mock_service.events.return_value.insert.return_value.execute.side_effect = Exception("API error")
         with self.assertRaises(Exception):
-            google_calendar.create_event(self.mock_service, self.cal_id, self.day, self.description)
+            google_calendar.create_event(self.mock_service, self.day, self.description)
 
     def test_create_event_raises_on_delete_error(self):
         # Delete raises exception
@@ -74,7 +76,7 @@ class TestGoogleCalendar(unittest.TestCase):
         self.mock_service.events.return_value.list.return_value.execute.return_value = {"items": [event]}
         self.mock_service.events.return_value.delete.return_value.execute.side_effect = Exception("Delete error")
         with self.assertRaises(Exception):
-            google_calendar.create_event(self.mock_service, self.cal_id, self.day, self.description)
+            google_calendar.create_event(self.mock_service, self.day, self.description)
 
     def test_remove_existing_events_handles_no_items_key(self):
         # No 'items' key in response

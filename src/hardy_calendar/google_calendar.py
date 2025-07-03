@@ -33,7 +33,11 @@ def remove_existing_events(service: Any, cal_id: str, date: datetime.date) -> No
             service.events().delete(calendarId=cal_id, eventId=event["id"]).execute()
 
 
-def create_event(service: Any, cal_id: str, day: datetime.date, description: str) -> None:
+def create_event(service: Any, day: datetime.date, description: str) -> None:
+    cal_id: str | None = os.environ.get('GOOGLE_CALENDAR_ID')
+    if not cal_id:
+        raise ValueError("GOOGLE_CALENDAR_ID environment variable is not set.")
+
     remove_existing_events(service, cal_id, day)
 
     if isinstance(day, datetime.datetime):
