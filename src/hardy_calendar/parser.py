@@ -1,19 +1,10 @@
 import re
-import requests
 from bs4 import BeautifulSoup
 from typing import Dict
 from datetime import datetime
 import pprint
 
 BLOG_URL = "https://www.hardywyzszaforma.pl/blog"
-
-def _fetch_plan_links() -> list[str]:
-    resp = requests.get(BLOG_URL)
-    resp.raise_for_status()
-    soup = BeautifulSoup(resp.text, "html.parser")
-    posts = soup.find_all("a", href=True, text=re.compile(r"Plan treningowy", re.I))
-    return [post['href'] for post in posts]
-
 
 def normalize_description(description: str) -> str:
     text = description.replace('\xa0', ' ')
@@ -45,7 +36,7 @@ def normalize_description(description: str) -> str:
     return '\n\n'.join(result_parts)
 
 
-def _parse_plan(html: str) -> Dict[datetime, str]:
+def parse_weekly_plan_page(url: str, html: str) -> Dict[datetime, str]:
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text("\n")
     header_pattern = re.compile(r"(\d{2}\s*\.\s*\d{2})\s+(\w+)", re.UNICODE)
@@ -63,19 +54,3 @@ def _parse_plan(html: str) -> Dict[datetime, str]:
         date_obj = datetime(year, month, day)
         result[date_obj] = normalize_description(description)
     return result
-
-
-def get_daily_plans() -> Dict[datetime, str]:
-    all_plans = {}
-    links = _fetch_plan_links()
-    print(f"Found {len(links)} training plans:\n" + "\n".join(links))
-
-    for link in links:
-        html = requests.get(link).text
-        plan = _parse_plan(html)
-        all_plans.update(plan)
-
-    print(f"Extracted {len(all_plans)} daily plans.")
-    pprint.pprint(all_plans)
-    
-    return all_plans

@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from src.hardy_calendar.extractor import _parse_plan
+from src.hardy_calendar.parser import parse_weekly_plan_page
 
 def test_parse_one_day():
     # Load the HTML file
@@ -8,7 +8,7 @@ def test_parse_one_day():
         html = f.read()
 
     # Parse the plan
-    plans = _parse_plan(html)
+    plans = parse_weekly_plan_page("any", html)
 
     # Find the first date (adjust as needed)
     day = datetime(2025, 6, 30)  # 30.06
@@ -40,7 +40,7 @@ def test_parse_another_day():
         html = f.read()
 
     # Parse the plan
-    plans = _parse_plan(html)
+    plans = parse_weekly_plan_page("any", html)
 
     # Find the first date (adjust as needed)
     day = datetime(2025, 7, 1)  # 01.07
@@ -80,7 +80,7 @@ def test_parse_last_day():
         html = f.read()
 
     # Parse the plan
-    plans = _parse_plan(html)
+    plans = parse_weekly_plan_page("any", html)
 
     # Find the first date (adjust as needed)
     day = datetime(2025, 7, 6)  # 06.07

@@ -9,6 +9,7 @@ from googleapiclient.discovery import build
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
+
 def get_calendar_service() -> Any:
     creds_json: str = os.environ.get('GOOGLE_API_CREDENTIALS')
     creds_info: dict = json.loads(creds_json)
