@@ -2,13 +2,15 @@ import os
 from datetime import datetime
 from src.hardy_calendar.parser import parse_weekly_plan_page
 
+POST_URL = "https://www.hardywyzszaforma.pl/plan"
+
 def test_parse_one_day():
     # Load the HTML file
     with open(os.path.join(os.path.dirname(__file__), "./plan.html"), encoding="utf-8") as f:
         html = f.read()
 
     # Parse the plan
-    plans = parse_weekly_plan_page("any", html)
+    plans = parse_weekly_plan_page(POST_URL, html)
 
     # Find the first date (adjust as needed)
     day = datetime(2025, 6, 30)  # 30.06
@@ -28,6 +30,9 @@ Czas pracy w części głównej: 21 min
 Ćwiczenia: DB's butterfly, powerband triceps extension, b-stance BB RDL, push up plank leg abduction
 Metoda treningowa: 4 rundy, co 2,5 min wykonaj parę ćwiczeń
 Czas pracy w części głównej: 21 min
+
+Source: https://www.hardywyzszaforma.pl/plan
+Got questions? Ideas? Come here: https://github.com/cajivah/hardy-calendar/issues
 """.strip()
     
     assert day in plans
@@ -40,7 +45,7 @@ def test_parse_another_day():
         html = f.read()
 
     # Parse the plan
-    plans = parse_weekly_plan_page("any", html)
+    plans = parse_weekly_plan_page(POST_URL, html)
 
     # Find the first date (adjust as needed)
     day = datetime(2025, 7, 1)  # 01.07
@@ -70,6 +75,9 @@ Czas pracy w części głównej: 16 min
 Ćwiczenia: heavy ring row, hammer curl + drop set, DB single leg hip thrust, spanish squat
 Metoda treningowa: 4 rundy, co 2,5 min wykonaj parę ćwiczeń
 Czas pracy w części głównej: 21 min
+
+Source: https://www.hardywyzszaforma.pl/plan
+Got questions? Ideas? Come here: https://github.com/cajivah/hardy-calendar/issues
 """.strip()
     assert day in plans
     assert plans[day] == expected
@@ -80,7 +88,7 @@ def test_parse_last_day():
         html = f.read()
 
     # Parse the plan
-    plans = parse_weekly_plan_page("any", html)
+    plans = parse_weekly_plan_page(POST_URL, html)
 
     # Find the first date (adjust as needed)
     day = datetime(2025, 7, 6)  # 06.07
@@ -90,6 +98,9 @@ def test_parse_last_day():
 Ćwiczenia: burpee, DB's push press, bridge walkout, alt. Db snatch, forearm plank
 Metoda treningowa: 12 i 8 min EMOM
 Czas pracy w części głównej: 20 min
+
+Source: https://www.hardywyzszaforma.pl/plan
+Got questions? Ideas? Come here: https://github.com/cajivah/hardy-calendar/issues
 """.strip()
     assert day in plans
     print(plans[day])

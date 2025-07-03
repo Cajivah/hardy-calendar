@@ -31,6 +31,10 @@ def test_parse_weekly_plan_page_extracts_dates_and_descriptions():
     plans = parser.parse_weekly_plan_page(url, html)
     assert len(plans) == 2
     assert any(isinstance(k, datetime) for k in plans)
+    # Check that the description contains the source and feedback links
+    for v in plans.values():
+        assert "Source: http://example.com/plan" in v
+        assert "Got questions?" in v
     assert any("Speed" in v or "Strength" in v for v in plans.values())
 
 def test_parse_weekly_plan_page_handles_no_headers():

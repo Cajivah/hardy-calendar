@@ -36,6 +36,15 @@ def normalize_description(description: str) -> str:
     return '\n\n'.join(result_parts)
 
 
+def parse_date_from_header(date_str: str) -> datetime:
+    # Parse date (assume current year) - remove spaces around dot first
+    clean_date_str = re.sub(r'\s*\.\s*', '.', date_str)
+    day, month = map(int, clean_date_str.split('.'))
+    # It won't work for the first week of January but...
+    year = datetime.now().year
+    return datetime(year, month, day)
+
+
 def parse_weekly_plan_page(url: str, html: str) -> Dict[datetime, str]:
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text("\n")
@@ -46,11 +55,10 @@ def parse_weekly_plan_page(url: str, html: str) -> Dict[datetime, str]:
         end = headers[i + 1][0] if i + 1 < len(headers) else len(text)
         description = text[pos:end].strip()
         description = description[len(header):].strip()
-        # Parse date (assume current year) - remove spaces around dot first
-        clean_date_str = re.sub(r'\s*\.\s*', '.', date_str)
-        day, month = map(int, clean_date_str.split('.'))
-        # It won't work for the first week of January but...
-        year = datetime.now().year
-        date_obj = datetime(year, month, day)
-        result[date_obj] = normalize_description(description)
+        description = normalize_description(description)
+        # Add source and feedback links
+        description += f"\n\nSource: {url}\nGot questions? Ideas? Come here: https://github.com/cajivah/hardy-calendar/issues"
+        
+        date = parse_date_from_header(date_str)
+        result[date] = description
     return result
