@@ -40,7 +40,6 @@ jobs:
           venv-${{ runner.os }}-py${{ steps.setup-python.outputs.python-version }}-
 
     - name: Install dependencies
-      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction
       
     - name: Verify Python environment
