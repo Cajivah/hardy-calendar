@@ -4,6 +4,10 @@ from src.hardy_calendar.parser import parse_weekly_plan_page
 
 POST_URL = "https://www.hardywyzszaforma.pl/plan"
 
+# PARSER ALWAYS RETURNS CURRENT YEAR BECAUSE HARDY DOESN'T PROVIDE YEAR IN PLAN HEADERS
+# I HAD TO APPROXIMATE IT SOMEHOW :/
+current_year = datetime.now().year
+
 def test_parse_one_day():
     # Load the HTML file
     with open(os.path.join(os.path.dirname(__file__), "./plan.html"), encoding="utf-8") as f:
@@ -13,7 +17,7 @@ def test_parse_one_day():
     plans = parse_weekly_plan_page(POST_URL, html)
 
     # Find the first date (adjust as needed)
-    day = datetime(2025, 6, 30)  # 30.06
+    day = datetime(current_year, 6, 30)  # 30.06
 
     expected = """
 ⇒ Speed
@@ -48,7 +52,7 @@ def test_parse_another_day():
     plans = parse_weekly_plan_page(POST_URL, html)
 
     # Find the first date (adjust as needed)
-    day = datetime(2025, 7, 1)  # 01.07
+    day = datetime(current_year, 7, 1)  # 01.07
     
     expected = """
 ⇒ Speed
@@ -91,7 +95,7 @@ def test_parse_last_day():
     plans = parse_weekly_plan_page(POST_URL, html)
 
     # Find the first date (adjust as needed)
-    day = datetime(2025, 7, 6)  # 06.07
+    day = datetime(current_year, 7, 6)  # 06.07
     
     expected = """
 ⇒ Fast&strong
